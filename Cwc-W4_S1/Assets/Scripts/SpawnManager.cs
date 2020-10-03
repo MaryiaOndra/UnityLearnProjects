@@ -3,7 +3,7 @@
 public class SpawnManager : MonoBehaviour
 {
     public GameObject[] obstaclePrefabs;
-    private Vector3 spawnPos = new Vector3(25, 0, 0);
+    private Vector3 spawnPos = new Vector3(25, 15, 0);
 
     private float startDelay = 3f;
     private float repeatRate = 2.5f;
