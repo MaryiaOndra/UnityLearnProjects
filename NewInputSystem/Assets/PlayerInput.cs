@@ -57,6 +57,14 @@ public class @PlayerInput : IInputActionCollection, IDisposable
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
                     ""interactions"": """"
+                },
+                {
+                    ""name"": ""Click"",
+                    ""type"": ""Button"",
+                    ""id"": ""449590ff-87b3-4db5-9a14-4eed7a268fd5"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": ""Simple""
                 }
             ],
             ""bindings"": [
@@ -213,6 +221,17 @@ public class @PlayerInput : IInputActionCollection, IDisposable
                     ""action"": ""Throw"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""fe0fa34c-3e9d-4f38-8d92-7c60b8f25eb6"",
+                    ""path"": ""<Mouse>/leftButton"",
+                    ""interactions"": ""MultiTap"",
+                    ""processors"": """",
+                    ""groups"": ""Mouse and Keyboard"",
+                    ""action"": ""Click"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -254,6 +273,7 @@ public class @PlayerInput : IInputActionCollection, IDisposable
         m_Player_PickUp = m_Player.FindAction("PickUp", throwIfNotFound: true);
         m_Player_Drop = m_Player.FindAction("Drop", throwIfNotFound: true);
         m_Player_Throw = m_Player.FindAction("Throw", throwIfNotFound: true);
+        m_Player_Click = m_Player.FindAction("Click", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -308,6 +328,7 @@ public class @PlayerInput : IInputActionCollection, IDisposable
     private readonly InputAction m_Player_PickUp;
     private readonly InputAction m_Player_Drop;
     private readonly InputAction m_Player_Throw;
+    private readonly InputAction m_Player_Click;
     public struct PlayerActions
     {
         private @PlayerInput m_Wrapper;
@@ -317,6 +338,7 @@ public class @PlayerInput : IInputActionCollection, IDisposable
         public InputAction @PickUp => m_Wrapper.m_Player_PickUp;
         public InputAction @Drop => m_Wrapper.m_Player_Drop;
         public InputAction @Throw => m_Wrapper.m_Player_Throw;
+        public InputAction @Click => m_Wrapper.m_Player_Click;
         public InputActionMap Get() { return m_Wrapper.m_Player; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -341,6 +363,9 @@ public class @PlayerInput : IInputActionCollection, IDisposable
                 @Throw.started -= m_Wrapper.m_PlayerActionsCallbackInterface.OnThrow;
                 @Throw.performed -= m_Wrapper.m_PlayerActionsCallbackInterface.OnThrow;
                 @Throw.canceled -= m_Wrapper.m_PlayerActionsCallbackInterface.OnThrow;
+                @Click.started -= m_Wrapper.m_PlayerActionsCallbackInterface.OnClick;
+                @Click.performed -= m_Wrapper.m_PlayerActionsCallbackInterface.OnClick;
+                @Click.canceled -= m_Wrapper.m_PlayerActionsCallbackInterface.OnClick;
             }
             m_Wrapper.m_PlayerActionsCallbackInterface = instance;
             if (instance != null)
@@ -360,6 +385,9 @@ public class @PlayerInput : IInputActionCollection, IDisposable
                 @Throw.started += instance.OnThrow;
                 @Throw.performed += instance.OnThrow;
                 @Throw.canceled += instance.OnThrow;
+                @Click.started += instance.OnClick;
+                @Click.performed += instance.OnClick;
+                @Click.canceled += instance.OnClick;
             }
         }
     }
@@ -389,5 +417,6 @@ public class @PlayerInput : IInputActionCollection, IDisposable
         void OnPickUp(InputAction.CallbackContext context);
         void OnDrop(InputAction.CallbackContext context);
         void OnThrow(InputAction.CallbackContext context);
+        void OnClick(InputAction.CallbackContext context);
     }
 }
