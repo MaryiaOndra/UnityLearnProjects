@@ -5,12 +5,13 @@ using Triangulator;
 using UnityEngine;
 using UnityEngine.UI;
 
-enum Turn 
+public enum Turn 
 {
     RIGHT,
     LEFT,
     FORWARD,
-    BACK
+    BACK,
+    NONE
 }
 
 public class MeshGenerator : MonoBehaviour
@@ -20,19 +21,22 @@ public class MeshGenerator : MonoBehaviour
     [SerializeField] Material customMat;
     [SerializeField] InputField inputNmbr;
     [SerializeField] Button enterBtn;
+    [SerializeField] Toggle[] turnsToggle;
 
     int wallLenght;
     Vector2 pointStart;
     Vector2 pointEnd;
-    bool isWallCreated;
+    bool isWallCreated;    
 
     Turn wallTurn;
+    Turn prevWallTurn;
 
     void Start()
     {
         pointStart = Vector2.zero;
         enterBtn.interactable = false;
         enterBtn.onClick.AddListener(GenerateNewWall);
+        wallTurn = Turn.FORWARD;
     }
 
     private void Update()
@@ -46,24 +50,52 @@ public class MeshGenerator : MonoBehaviour
         }
     }
 
+    public void TurnToggleChanged(Toggle toggle) 
+    {
+        wallTurn = toggle.GetComponent<ToggleData>().TurnState;
+    }
+
     void GenerateNewWall()
     {
-        pointEnd = pointStart + new Vector2(0, wallLenght);
-
         switch (wallTurn)
         {
             case Turn.RIGHT:
+                if (prevWallTurn != Turn.LEFT)
+                    pointEnd = pointStart + new Vector2(wallLenght, 0);
+                else
+                    wallTurn = Turn.NONE;
                 break;
             case Turn.LEFT:
+                if (prevWallTurn != Turn.RIGHT)
+                    pointEnd = pointStart + new Vector2(wallLenght * -1, 0);
+                else
+                    wallTurn = Turn.NONE;
                 break;
             case Turn.FORWARD:
+                if (prevWallTurn != Turn.BACK)
+                    pointEnd = pointStart + new Vector2(0, wallLenght);
+                else
+                    wallTurn = Turn.NONE;
                 break;
             case Turn.BACK:
+                if (prevWallTurn != Turn.FORWARD)
+                    pointEnd = pointStart + new Vector2(0, wallLenght * -1);
+                else
+                    wallTurn = Turn.NONE;
                 break;
         }
 
-        GenerateWall(pointStart, pointEnd, WALL_HEIGHT );
+        if (wallTurn != Turn.NONE)
+        {
+            GenerateWall(pointStart, pointEnd, WALL_HEIGHT);
+        }
+        else
+        {
+            Debug.LogWarning("CAN'T CREATE A WALL IN THIS DIRECTION, PLEASE CHOOSE ANOTHER DIRECTION");
+        }
+
         pointStart = pointEnd;
+        prevWallTurn = wallTurn;
     }
 
     void GenerateWall(Vector2 _pointStart, Vector2 _pointEnd, float _height) 

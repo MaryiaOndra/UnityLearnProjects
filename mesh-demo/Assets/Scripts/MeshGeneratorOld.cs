@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using Triangulator;
 using UnityEngine;
 
-public class MeshGenerator1 : MonoBehaviour
+public class MeshGeneratorOld: MonoBehaviour
 {
    
     const float WALL_HEIGHT = 3;
