@@ -1,9 +1,9 @@
-namespace Triangulator
+namespace WallGenerator.Triangulator
 {
-    /// <summary>
-    /// A basic triangle structure that holds the three vertices that make up a given triangle.
-    /// </summary>
-    struct Triangle
+	/// <summary>
+	/// A basic triangle structure that holds the three vertices that make up a given triangle.
+	/// </summary>
+	struct Triangle
 	{
 		public readonly Vertex A;
 		public readonly Vertex B;

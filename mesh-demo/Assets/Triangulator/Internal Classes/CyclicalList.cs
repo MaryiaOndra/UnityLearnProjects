@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Triangulator
+namespace WallGenerator.Triangulator
 {
 	/// <summary>
 	/// Implements a List structure as a cyclical list where indices are wrapped.

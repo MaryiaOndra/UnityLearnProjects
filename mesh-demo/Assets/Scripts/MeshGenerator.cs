@@ -1,154 +1,143 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using Triangulator;
+using System.Linq;
 using UnityEngine;
-using UnityEngine.UI;
+using WallGenerator.Triangulator;
 
-public enum Turn 
+namespace WallGenerator
 {
-    RIGHT,
-    LEFT,
-    FORWARD,
-    BACK,
-    NONE
-}
-
-public class MeshGenerator : MonoBehaviour
-{
-    const float WALL_HEIGHT = 3;
-
-    [SerializeField] Material customMat;
-    [SerializeField] InputField inputNmbr;
-    [SerializeField] Button enterBtn;
-    [SerializeField] Toggle[] turnsToggle;
-
-    int wallLenght;
-    Vector2 pointStart;
-    Vector2 pointEnd;
-    bool isWallCreated;    
-
-    Turn wallTurn;
-    Turn prevWallTurn;
-
-    void Start()
+    public class MeshGenerator : MonoBehaviour
     {
-        pointStart = Vector2.zero;
-        enterBtn.interactable = false;
-        enterBtn.onClick.AddListener(GenerateNewWall);
-        wallTurn = Turn.FORWARD;
-    }
+        [SerializeField] Material wallMat;
+        [SerializeField] Material floorMat;
 
-    private void Update()
-    {
-        _ = Int32.TryParse(inputNmbr.text, out wallLenght);
+        Vector2[] prevVerteces;
+        Vector2[] actualVerteces;
 
-        if (wallLenght != 0)
+        Vector2[]vertices2D;
+        int[] indices;
+
+        bool isTheFirstWall = true;
+
+        #region GenerateFloorMesh
+        public void CreateFloor()
         {
-            enterBtn.interactable = true;
-            pointStart = pointEnd;
-        }
-    }
+            Triangulator.Triangulator.Triangulate(actualVerteces, WindingOrder.Clockwise, out vertices2D, out indices);
 
-    public void TurnToggleChanged(Toggle toggle) 
-    {
-        wallTurn = toggle.GetComponent<ToggleData>().TurnState;
-    }
+            Mesh _floorMesh = new Mesh();
+            GameObject _floor;
+            Color[] _colors = Enumerable.Range(0, actualVerteces.Length).Select(i => Color.grey).ToArray();
+            Vector3[] _vertices3D = Array.ConvertAll<Vector2, Vector3>(vertices2D, v => v);
 
-    void GenerateNewWall()
-    {
-        switch (wallTurn)
-        {
-            case Turn.RIGHT:
-                if (prevWallTurn != Turn.LEFT)
-                    pointEnd = pointStart + new Vector2(wallLenght, 0);
-                else
-                    wallTurn = Turn.NONE;
-                break;
-            case Turn.LEFT:
-                if (prevWallTurn != Turn.RIGHT)
-                    pointEnd = pointStart + new Vector2(wallLenght * -1, 0);
-                else
-                    wallTurn = Turn.NONE;
-                break;
-            case Turn.FORWARD:
-                if (prevWallTurn != Turn.BACK)
-                    pointEnd = pointStart + new Vector2(0, wallLenght);
-                else
-                    wallTurn = Turn.NONE;
-                break;
-            case Turn.BACK:
-                if (prevWallTurn != Turn.FORWARD)
-                    pointEnd = pointStart + new Vector2(0, wallLenght * -1);
-                else
-                    wallTurn = Turn.NONE;
-                break;
+            for (int i = 0; i < _vertices3D.Length; i++)
+            {
+                _vertices3D[i].z = _vertices3D[i].y;
+                _vertices3D[i].y = 0;
+            }
+
+            _floorMesh.vertices = _vertices3D;
+            _floorMesh.triangles = indices;
+
+            _floor = new GameObject("FloorMesh", typeof(MeshFilter), typeof(MeshRenderer), typeof(FloorMesh));
+            _floor.GetComponent<MeshFilter>().sharedMesh = _floorMesh;
+            _floor.GetComponent<MeshRenderer>().sharedMaterial = floorMat;
         }
 
-        if (wallTurn != Turn.NONE)
+        void CreateFloorVerticesArray()
         {
-            GenerateWall(pointStart, pointEnd, WALL_HEIGHT);
+            if (isTheFirstWall)
+            {
+                prevVerteces = actualVerteces;
+                isTheFirstWall = false;
+            }
+            else
+            {
+                int _arraySize = prevVerteces.Length + actualVerteces.Length;
+                int _indx = prevVerteces.Length;
+                Vector2[] _combineVerteces = new Vector2[_arraySize];
+
+                for (int i = 0; i < prevVerteces.Length; i++)
+                {
+                    _combineVerteces[i] = prevVerteces[i];
+                }
+                for (int i = 0; i < actualVerteces.Length; i++)
+                {
+                    _combineVerteces[_indx] = actualVerteces[i];
+                    _indx++;
+                }
+
+                actualVerteces = _combineVerteces;
+                prevVerteces = _combineVerteces;
+            }
         }
-        else
+
+        #endregion
+
+        #region GenerateWallMesh
+        public void CreateWallMesh(Vector2 _pointStart, Vector2 _pointEnd, float _height)
         {
-            Debug.LogWarning("CAN'T CREATE A WALL IN THIS DIRECTION, PLEASE CHOOSE ANOTHER DIRECTION");
+            Mesh _mesh = new Mesh();
+            float _wallLenght = Vector2.Distance(_pointStart, _pointEnd);
+            int[] _triangles = new int[12];
+
+            Vector3[] _vertices = new Vector3[]
+            {
+                new Vector3(_pointStart.x, 0, _pointStart.y),
+                new Vector3(_pointStart.x, _height, _pointStart.y),
+                new Vector3(_pointEnd.x, 0, _pointEnd.y),
+                new Vector3(_pointEnd.x, _height, _pointEnd.y),
+                new Vector3(_pointStart.x, 0, _pointStart.y),
+                new Vector3(_pointStart.x, _height, _pointStart.y),
+                new Vector3(_pointEnd.x, 0, _pointEnd.y),
+                new Vector3(_pointEnd.x, _height, _pointEnd.y)
+            };
+
+            Vector2[] _uv = new Vector2[]
+            {
+                new Vector2(0, 0),
+                new Vector2(0, 1),
+                new Vector2(_wallLenght / _vertices[1].y , 0),
+                new Vector2(_wallLenght / _vertices[1].y , 1),
+                new Vector2(_wallLenght / _vertices[1].y, 1),
+                new Vector2(_wallLenght / _vertices[1].y , 0),
+                new Vector2(0, 1),
+                new Vector2(0, 0)
+            };
+
+            _triangles[0] = 0;
+            _triangles[1] = 1;
+            _triangles[2] = 3;
+
+            _triangles[3] = 0;
+            _triangles[4] = 3;
+            _triangles[5] = 2;
+
+            _triangles[6] = 4;
+            _triangles[7] = 7;
+            _triangles[8] = 5;
+
+            _triangles[9] = 4;
+            _triangles[10] = 6;
+            _triangles[11] = 7;
+
+
+            actualVerteces = new Vector2[]
+            {
+                new Vector2(_vertices[0].x, _vertices[0].z),
+                new Vector2(_vertices[2].x, _vertices[2].z),
+            };
+
+            CreateFloorVerticesArray();
+
+            _mesh.vertices = _vertices;
+            _mesh.triangles = _triangles;
+            _mesh.uv = _uv;
+
+            _mesh.RecalculateNormals();
+
+            GameObject _go = new GameObject("WallMesh", typeof(MeshFilter), typeof(MeshRenderer));
+            _go.GetComponent<MeshFilter>().sharedMesh = _mesh;
+            _go.GetComponent<MeshRenderer>().sharedMaterial = wallMat;
         }
-
-        pointStart = pointEnd;
-        prevWallTurn = wallTurn;
-    }
-
-    void GenerateWall(Vector2 _pointStart, Vector2 _pointEnd, float _height) 
-    {
-        Mesh _mesh = new Mesh();
-        Vector3[] _vertices = new Vector3[8];
-        Vector2[] _uv = new Vector2[8];
-        int[] _triangles = new int[12];
-
-        _vertices[0] = new Vector3(_pointStart.x, 0, _pointStart.y);
-        _vertices[1] = new Vector3(_pointStart.x, _height, _pointStart.y);
-        _vertices[2] = new Vector3(_pointEnd.x, 0 ,_pointEnd.y);
-        _vertices[3] = new Vector3(_pointEnd.x, _height, _pointEnd.y);
-        _vertices[4] = new Vector3(_pointStart.x, 0, _pointStart.y);
-        _vertices[5] = new Vector3(_pointStart.x, _height, _pointStart.y);
-        _vertices[6] = new Vector3(_pointEnd.x, 0, _pointEnd.y);
-        _vertices[7] = new Vector3(_pointEnd.x, _height, _pointEnd.y);
-
-        float _wallLenght = Vector2.Distance(_pointStart, _pointEnd);
-
-        _uv[0] = new Vector2(0, 0);
-        _uv[1] = new Vector2(0, 2);
-        _uv[2] = new Vector2(_wallLenght / _vertices[1].y * 2, 0);
-        _uv[3] = new Vector2(_wallLenght / _vertices[1].y * 2, 2);
-        _uv[4] = new Vector2(_wallLenght / _vertices[1].y * 2, 2);
-        _uv[5] = new Vector2(_wallLenght / _vertices[1].y * 2, 0);
-        _uv[6] = new Vector2(0, 2);
-        _uv[7] = new Vector2(0, 0);
-
-        _triangles[0] = 0;
-        _triangles[1] = 1;
-        _triangles[2] = 3;
-
-        _triangles[3] = 0;
-        _triangles[4] = 3;
-        _triangles[5] = 2;
-
-        _triangles[6] = 4;
-        _triangles[7] = 7;
-        _triangles[8] = 5;
-
-        _triangles[9] = 4;
-        _triangles[10] = 6;
-        _triangles[11] = 7;
-
-        _mesh.vertices = _vertices;
-        _mesh.triangles = _triangles;
-        _mesh.uv = _uv;
-
-        _mesh.RecalculateNormals();
-
-        GameObject _go = new GameObject("TypeMesh", typeof(MeshFilter), typeof(MeshRenderer));
-        _go.GetComponent<MeshFilter>().sharedMesh = _mesh;
-        _go.GetComponent<MeshRenderer>().sharedMaterial = customMat;
+        #endregion
     }
 }

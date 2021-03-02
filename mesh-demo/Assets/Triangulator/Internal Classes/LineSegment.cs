@@ -1,8 +1,8 @@
 using UnityEngine;
 
-namespace Triangulator
+namespace WallGenerator.Triangulator
 {
-    struct LineSegment
+	struct LineSegment
 	{
 		public Vertex A;
 		public Vertex B;

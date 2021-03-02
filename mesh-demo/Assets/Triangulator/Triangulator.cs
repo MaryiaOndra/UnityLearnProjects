@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Text;
 using UnityEngine;
 
-namespace Triangulator
+namespace WallGenerator.Triangulator
 {
     /// <summary>
     /// A static class exposing methods for triangulating 2D polygons. This is the sole public
@@ -19,7 +19,7 @@ namespace Triangulator
     /// used as part of your content pipeline or at load-time. It is not something you want to be
     /// using each and every frame unless you really don't care about garbage.
     /// </summary>
-    public static class Triangulator
+    public static class Triangulator 
 	{
 		#region Fields
 

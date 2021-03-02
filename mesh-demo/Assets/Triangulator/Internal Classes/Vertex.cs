@@ -1,8 +1,8 @@
 using UnityEngine;
 
-namespace Triangulator
+namespace WallGenerator.Triangulator
 {
-    struct Vertex
+	struct Vertex
 	{
 		public readonly Vector2 Position;
 		public readonly int Index;
