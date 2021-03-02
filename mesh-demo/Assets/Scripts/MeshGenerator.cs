@@ -36,6 +36,7 @@ namespace WallGenerator
 
             _floorMesh.vertices = _vertices3D;
             _floorMesh.triangles = indices;
+            _floorMesh.RecalculateNormals();
 
             _floor = new GameObject("FloorMesh", typeof(MeshFilter), typeof(MeshRenderer), typeof(FloorMesh));
             _floor.GetComponent<MeshFilter>().sharedMesh = _floorMesh;
