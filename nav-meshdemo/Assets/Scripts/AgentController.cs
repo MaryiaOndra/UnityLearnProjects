@@ -6,13 +6,18 @@ using UnityEngine.AI;
 public class AgentController : MonoBehaviour
 {
     [SerializeField] Camera mainCamera;
+    [SerializeField] GameObject particlesPrefab;
 
-    NavMeshAgent agentNavMesh;
+    NavMeshAgent agent;
     float linkMoveProgress;
+    GameObject particleObj;
+    bool isNewPoint;
+
+    List<Transform> waypoints;
 
     private void Awake()
     {
-        agentNavMesh = GetComponent<NavMeshAgent>();
+        agent = GetComponent<NavMeshAgent>();
     }
 
     private void Update()
@@ -24,15 +29,31 @@ public class AgentController : MonoBehaviour
 
             if (Physics.Raycast(_ray, out _raycastHit))
             {
-                agentNavMesh.SetDestination(_raycastHit.point);
+                agent.SetDestination(_raycastHit.point);
+                isNewPoint = true;
             }
         }
 
-        if (agentNavMesh.isOnOffMeshLink)
+        if (isNewPoint 
+            && agent.pathStatus == NavMeshPathStatus.PathComplete
+            && particleObj == null)
+        {
+            particleObj = Instantiate(particlesPrefab, agent.destination, Quaternion.identity);
+            isNewPoint = false;
+        }
+
+        if (!agent.hasPath && !agent.pathPending && particleObj)
+        {
+            Debug.Log("Destroy particle");
+            Destroy(particleObj);
+            particleObj = null;
+        }
+
+        if (agent.isOnOffMeshLink)
         {
             linkMoveProgress += Time.deltaTime;
 
-            Vector3 _newPos = Vector3.Lerp(agentNavMesh.currentOffMeshLinkData.startPos, agentNavMesh.currentOffMeshLinkData.endPos, linkMoveProgress);
+            Vector3 _newPos = Vector3.Lerp(agent.currentOffMeshLinkData.startPos, agent.currentOffMeshLinkData.endPos, linkMoveProgress);
             _newPos.y = transform.position.y;
 
             transform.position = _newPos;
@@ -40,7 +61,7 @@ public class AgentController : MonoBehaviour
             if (linkMoveProgress >= 1f)
             {
                 linkMoveProgress = 0;
-                agentNavMesh.CompleteOffMeshLink();
+                agent.CompleteOffMeshLink();
             }
         }
     }
