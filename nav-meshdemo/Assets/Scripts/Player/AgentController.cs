@@ -13,8 +13,6 @@ public class AgentController : MonoBehaviour
     GameObject particleObj;
     bool isNewPoint;
 
-    List<Transform> waypoints;
-
     private void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
@@ -65,5 +63,4 @@ public class AgentController : MonoBehaviour
             }
         }
     }
-
 }
