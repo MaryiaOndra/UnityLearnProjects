@@ -44,5 +44,4 @@ public class PlayerUI : MonoBehaviour
         transform.LookAt(Camera.main.transform);
         transform.Rotate(0, 180, 0);
     }
-
 }

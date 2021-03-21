@@ -14,16 +14,15 @@ public class EnemyPatrol : MonoBehaviour
     int waypointIndex;
     bool isChasing;
 
-    AgentController player;
+    PlayerMover player;
     NavMeshAgent agent;
     EnemyBhv enemyBhv;
 
     private void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
-        player = FindObjectOfType<AgentController>();
+        player = FindObjectOfType<PlayerMover>();
         enemyBhv = GetComponent<EnemyBhv>();
-        //agent.autoBraking = false;
     }
 
     private void Start()

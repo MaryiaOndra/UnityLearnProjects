@@ -6,12 +6,15 @@ using UnityEngine.SceneManagement;
 
 public class PlayerBhv : MonoBehaviour
 {
-    [SerializeField] GameObject deathParticle;
-    [SerializeField] GameObject attackParticle;
+    [SerializeField]
+    GameObject deathParticle;
+    [SerializeField] 
+    GameObject attackParticle;
+    [SerializeField]
+    float attackStrenght = 15f;
 
     float maxHealth = 100;
     float currentHealth;
-    float attackStrenght = 10f;
     float delayForDeath = 0.5f;
     float attackDelay = 1f;
     float elapsedTime = 0f;
@@ -34,7 +37,7 @@ public class PlayerBhv : MonoBehaviour
     public void AnswerAttack(EnemyBhv enemy) 
     {
         RotateTowardsTarget(enemy);
-        Vector3 _particlePos = transform.position + new Vector3(2, 2 , 0 );
+        Vector3 _particlePos = transform.position + new Vector3(2, 2 , 1 );
 
         elapsedTime += Time.deltaTime;
 

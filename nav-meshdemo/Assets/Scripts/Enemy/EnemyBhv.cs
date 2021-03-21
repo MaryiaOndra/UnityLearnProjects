@@ -53,7 +53,7 @@ public class EnemyBhv : MonoBehaviour
 
     void CheckForDeath(float health) 
     {
-        if (health == 0)
+        if (health <= 0)
         {
             Instantiate(deathParticle, transform.position, Quaternion.identity);
             Destroy(gameObject, delayForDeath);
