@@ -8,10 +8,10 @@ public class PlayerBhv : MonoBehaviour
 {
     [SerializeField]
     GameObject deathParticle;
-    [SerializeField] 
-    GameObject attackParticle;
     [SerializeField]
-    float attackStrenght = 15f;
+    int attackStrenght = -15;
+    [SerializeField]
+    GameObject attackParticle;
 
     float maxHealth = 100;
     float currentHealth;
@@ -19,34 +19,49 @@ public class PlayerBhv : MonoBehaviour
     float attackDelay = 1f;
     float elapsedTime = 0f;
 
+    Animator playerAnimator;
+    BottleController bottle;
+    GameObject activeBottle;
+
     public event Action<float> OnHealthChanged = delegate { };
+    public bool IsAttacked { get; set; }
 
     private void Awake()
     {
+        playerAnimator = GetComponent<Animator>();
+        bottle = FindObjectOfType<BottleController>();
+
         currentHealth = maxHealth;
-        OnHealthChanged += CheckForDeath;
     }
 
-    public void TakeDamage(float amount)
+    public void ChangeHealth(float amount)
     {
-        currentHealth -= amount;
+        currentHealth += amount;
         float currentHealthImg = currentHealth / maxHealth;
         OnHealthChanged(currentHealthImg);
+        CheckForDeath(currentHealthImg);
     }
 
     public void AnswerAttack(EnemyBhv enemy) 
     {
         RotateTowardsTarget(enemy);
-        Vector3 _particlePos = transform.position + new Vector3(2, 2 , 1 );
+
 
         elapsedTime += Time.deltaTime;
 
         if (elapsedTime >= attackDelay)
         {
-            enemy.TakeDamage(attackStrenght);
-            Instantiate(attackParticle, _particlePos, transform.rotation);            
+            playerAnimator.SetBool("isAttack", true);
+            attackParticle.SetActive(true);
+            enemy.ChangeHealth(attackStrenght);         
             elapsedTime = 0;
-        }             
+        }     
+    }
+
+    public void BeIdle() 
+    {
+        playerAnimator.SetBool("isAttack", false);
+        attackParticle.SetActive(false);
     }
 
     void CheckForDeath(float health)
@@ -56,6 +71,10 @@ public class PlayerBhv : MonoBehaviour
             Instantiate(deathParticle, transform.position, Quaternion.identity);
             Destroy(gameObject, delayForDeath);
             SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        }
+        else if (health <= 0.5f)
+        {
+            activeBottle = bottle.Appear();
         }
     }
 
@@ -67,6 +86,17 @@ public class PlayerBhv : MonoBehaviour
         Vector3 _newDirection = Vector3.RotateTowards(transform.forward, _targetDirection, _singleStep, float.PositiveInfinity);
         Debug.DrawRay(transform.position, _newDirection, Color.green);
         transform.rotation = Quaternion.LookRotation(_newDirection);
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        Debug.Log(other.gameObject.name);
+
+        if (other.gameObject == activeBottle)
+        {
+            ChangeHealth(30f);
+            bottle.DestroyBottle();
+        }
     }
 }
  

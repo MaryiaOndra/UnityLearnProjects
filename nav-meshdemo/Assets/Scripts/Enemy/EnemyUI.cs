@@ -21,7 +21,7 @@ public class EnemyUI : MonoBehaviour
         enemyBhv = GetComponentInParent<EnemyBhv>();
         enemyBhv.OnEnemyHealthChanged += HandleHealthChanged;
         enemyBhv.OnEnemyAttackStarted += HandleAttackChanged;
-        attackStrenght.text = enemyBhv.AttackStrenght.ToString();
+        attackStrenght.text = Mathf.Abs(enemyBhv.AttackStrenght).ToString();
     }
 
     void HandleHealthChanged(float img) 

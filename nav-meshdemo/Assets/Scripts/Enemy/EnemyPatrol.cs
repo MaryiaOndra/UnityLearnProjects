@@ -82,6 +82,10 @@ public class EnemyPatrol : MonoBehaviour
         {
             enemyBhv.Attack();
         }
+        else
+        {
+            enemyBhv.BeIdle();
+        }
     }
 
 }

@@ -2,20 +2,26 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class EnemyBhv : MonoBehaviour
 {
-    [SerializeField] GameObject deathParticle;
+    [SerializeField] 
+    GameObject deathParticle;
+    [SerializeField]
+    GameObject attackParticle;
 
     PlayerBhv player;
 
     float delayForAttack = 1.5f;
     float delayForDeath = 0.5f;
-    float attackStrenght = 15f;
+    int attackStrenght;
     float timePassed;
 
     float maxHealth = 100;
-    float currentHealth;    
+    float currentHealth;
+
+    Animator enemyAnim;
 
     public event Action<float> OnEnemyHealthChanged = delegate { };
     public event Action<float> OnEnemyAttackStarted = delegate { };
@@ -25,30 +31,42 @@ public class EnemyBhv : MonoBehaviour
 
     private void Awake()
     {
+        enemyAnim = GetComponent<Animator>();
         player = FindObjectOfType<PlayerBhv>();
-        currentHealth = maxHealth;
         OnEnemyHealthChanged += CheckForDeath;
+        currentHealth = maxHealth;
+        attackStrenght = Random.Range(-3, -16);
     }
 
-    public void TakeDamage(float amount) 
+    public void ChangeHealth(float amount) 
     {
-        currentHealth -= amount;
+        currentHealth += amount;
         float currentHealthImg = currentHealth / maxHealth;
         OnEnemyHealthChanged(currentHealthImg);
     }
 
     public void Attack() 
     {
-        player.AnswerAttack(this);
+        player.AnswerAttack(this); 
 
         timePassed += Time.deltaTime;
 
         if (timePassed >= delayForAttack)
         {
+            enemyAnim.SetBool("isAttack", true);
+            attackParticle.SetActive(true);
+
             OnEnemyAttackStarted(delayForAttack);
-            player.TakeDamage(attackStrenght);
+            player.ChangeHealth(attackStrenght);
             timePassed = 0;
-        }    
+        }
+    }
+
+    public void BeIdle()
+    {
+        enemyAnim.SetBool("isAttack", false);
+        attackParticle.SetActive(false);
+        player.BeIdle();
     }
 
     void CheckForDeath(float health) 
@@ -57,6 +75,7 @@ public class EnemyBhv : MonoBehaviour
         {
             Instantiate(deathParticle, transform.position, Quaternion.identity);
             Destroy(gameObject, delayForDeath);
+            player.BeIdle();
         }    
     }
 }
