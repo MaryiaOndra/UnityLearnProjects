@@ -11,8 +11,11 @@ public class PlayerMover : MonoBehaviour
     NavMeshAgent agent;
     float linkMoveProgress;
     GameObject particleObj;
+    GameObject secParticleObj;
     GameObject moveParticleObj;
     bool isNewPoint;
+
+    List<Vector3> points = new List<Vector3>();
 
     private void Awake()
     {
@@ -30,6 +33,7 @@ public class PlayerMover : MonoBehaviour
             {
                 agent.SetDestination(_raycastHit.point);
                 isNewPoint = true;
+                points.Add(_raycastHit.point);
             }
         }
 
@@ -39,7 +43,16 @@ public class PlayerMover : MonoBehaviour
         {
             particleObj = Instantiate(particlesPrefab, agent.destination, Quaternion.identity);
             isNewPoint = false;
+            if (secParticleObj)
+                Destroy(secParticleObj);
         }
+        else if (isNewPoint && points.Count >= 1)
+        {
+            Destroy(particleObj);
+            secParticleObj = Instantiate(particlesPrefab, agent.destination, Quaternion.identity);
+            points.RemoveRange(0, points.Count - 1);
+        }
+
 
         if (!agent.hasPath && !agent.pathPending && particleObj)
         {
